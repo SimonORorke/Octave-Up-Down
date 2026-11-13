@@ -8,6 +8,9 @@ export component NiceWindow inherits Window {
     }
     background: Globals.window_background;
     icon: Globals.icon;
+    title: nice_window_title;
+
+    in property <string> nice_window_title;
 
     protected function nice_init() {
         Palette.color-scheme = ColorScheme.dark;

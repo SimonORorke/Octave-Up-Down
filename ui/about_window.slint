@@ -10,7 +10,6 @@ export component AboutWindow inherits NiceWindow {
         self.nice_init();
         keyboard_shortcuts_scope.focus();
     }
-    title: window_title;
     preferred-width: 795px;
     preferred-height: 335px;
     // This is a way to make a fixed-size window.
@@ -21,15 +20,15 @@ export component AboutWindow inherits NiceWindow {
     //    min-height: 335px;
     //    max-height: root.min-height;
 
-    out property <length> preferred_w: root.preferred-width;
-    out property <length> preferred_h: root.preferred-height;
-
-    in property <string> window_title;
+    in property <string> window_title <=> self.nice_window_title;
     in property <string> app_title;
     in property <string> version;
     in property <string> copyright;
     in property <string> license;
     in property <string> project_link;
+
+    out property <length> preferred_w: root.preferred-width;
+    out property <length> preferred_h: root.preferred-height;
 
     callback open_project_link();
     callback close_window();

@@ -9,14 +9,13 @@ export component NewVersionWindow inherits NiceWindow {
         self.nice_init();
         keyboard_shortcuts_scope.focus();
     }
-    title: window_title;
     preferred-width: 480px;
     preferred-height: 255px;
 
     in property <bool> auto_check_new_versions;
     in property <string> message;
     in property <string> releases_link;
-    in property <string> window_title;
+    in property <string> window_title <=> self.nice_window_title;
 
     out property <length> preferred_w: root.preferred-width;
     out property <length> preferred_h: root.preferred-height;
