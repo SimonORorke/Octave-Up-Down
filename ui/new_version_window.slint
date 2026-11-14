@@ -2,6 +2,7 @@ import { VerticalBox, } from "std-widgets.slint";
 import { UAppTheme } from "@sleek-ui/app-theme.slint";
 import { UButtonVariant } from "@sleek-ui/common.slint";
 import { UButton, USwitch, UText, } from "@sleek-ui/widgets.slint";
+import { ColourScheme } from "globals.slint";
 import { NiceWindow } from "components/nice_window.slint";
 
 export component NewVersionWindow inherits NiceWindow {
@@ -16,6 +17,7 @@ export component NewVersionWindow inherits NiceWindow {
     in property <string> message;
     in property <string> releases_link;
     in property <string> window_title <=> self.nice_window_title;
+    in-out property<ColourScheme> colour_scheme <=> self.nice_colour_scheme;
 
     out property <length> preferred_w: root.preferred-width;
     out property <length> preferred_h: root.preferred-height;

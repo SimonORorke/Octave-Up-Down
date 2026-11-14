@@ -12,6 +12,15 @@ export component NiceWindow inherits Window {
 
     in property <string> nice_window_title;
 
+    // Declared here (rather than directly in each top-level window) so the forwarding logic
+    // below is shared. Each top-level window re-exposes this as its own `colour_scheme`
+    // property via a two-way binding, since Slint only generates Rust accessors for properties
+    // declared directly on the top-level component.
+    in-out property<ColourScheme> nice_colour_scheme;
+    changed nice_colour_scheme => {
+        Globals.colour_scheme = self.nice_colour_scheme;
+    }
+
     protected function nice_init() {
         Palette.color-scheme = ColorScheme.dark;
 //        debug("NiceWindow.init:  UAppTheme.dark.font-size-base = " + (UAppTheme.dark.font-size-base / 1px));
@@ -20,17 +29,5 @@ export component NiceWindow inherits Window {
         UAppTheme.dark.font-size-big = 21px; // Default 18
         UAppTheme.dark.font-size-bigger = 23px; // Default 20
         UAppTheme.dark.radius-base = 20px;
-//        UAppTheme.dark.primary = UAppTheme.calendula-gold;
-//        UAppTheme.dark.primary = UAppTheme.cyan;
-//        UAppTheme.dark.primary = UAppTheme.daybreak-blue;
-//        UAppTheme.dark.primary = UAppTheme.dust-red;
-        UAppTheme.dark.primary = UAppTheme.french-magenta;
-//        UAppTheme.dark.primary = UAppTheme.geek-blue;
-//        UAppTheme.dark.primary = UAppTheme.golden-purple;
-//        UAppTheme.dark.primary = UAppTheme.lime;
-//        UAppTheme.dark.primary = UAppTheme.polar-green;
-//        UAppTheme.dark.primary = UAppTheme.sunrise-yellow;
-//        UAppTheme.dark.primary = UAppTheme.sunset-orange;
-//        UAppTheme.dark.primary = UAppTheme.volcano;
     }
 }

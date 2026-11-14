@@ -1,8 +1,60 @@
 import { UAppTheme } from "@sleek-ui/app-theme.slint";
+import { UPrimaryColor } from "@sleek-ui/colors.slint";
+
+// In a logical order by colour,
+// as in the Sleek-ui documentation and https://ant.design/docs/spec/colors.
+export enum ColourScheme {
+    dust-red,
+    volcano,
+    sunset-orange,
+    calendula-gold,
+    sunrise-yellow,
+    lime,
+    polar-green,
+    cyan,
+    daybreak-blue,
+    geek-blue,
+    golden-purple,
+    french-magenta,
+}
 
 export global Globals {
+    out property<UPrimaryColor> colour_scheme_primary: UAppTheme.daybreak-blue;
     out property<image> icon: @image-url("images/Octave Up-Down.png");
     out property<color> window_background: to-background-color(UAppTheme.primary.selected);
+
+    changed colour_scheme_primary => {
+        UAppTheme.dark.primary = self.colour_scheme_primary;
+    }
+
+    in-out property<ColourScheme> colour_scheme;
+    changed colour_scheme => {
+        if self.colour_scheme == ColourScheme.dust-red {
+            self.colour_scheme_primary = UAppTheme.dust-red;
+        } else if self.colour_scheme == ColourScheme.volcano {
+            self.colour_scheme_primary = UAppTheme.volcano;
+        } else if self.colour_scheme == ColourScheme.sunset-orange {
+            self.colour_scheme_primary = UAppTheme.sunset-orange;
+        } else if self.colour_scheme == ColourScheme.calendula-gold {
+            self.colour_scheme_primary = UAppTheme.calendula-gold;
+        } else if self.colour_scheme == ColourScheme.sunrise-yellow {
+            self.colour_scheme_primary = UAppTheme.sunrise-yellow;
+        } else if self.colour_scheme == ColourScheme.lime {
+            self.colour_scheme_primary = UAppTheme.lime;
+        } else if self.colour_scheme == ColourScheme.polar-green {
+            self.colour_scheme_primary = UAppTheme.polar-green;
+        } else if self.colour_scheme == ColourScheme.cyan {
+            self.colour_scheme_primary = UAppTheme.cyan;
+        } else if self.colour_scheme == ColourScheme.daybreak-blue {
+            self.colour_scheme_primary = UAppTheme.daybreak-blue;
+        } else if self.colour_scheme == ColourScheme.geek-blue {
+            self.colour_scheme_primary = UAppTheme.geek-blue;
+        } else if self.colour_scheme == ColourScheme.golden-purple {
+            self.colour_scheme_primary = UAppTheme.golden-purple;
+        } else if self.colour_scheme == ColourScheme.french-magenta {
+            self.colour_scheme_primary = UAppTheme.french-magenta;
+        }
+    }
 
     // Returns the complementary (opposite) colour of the specified colour.
     function complementary-color(relative-to-color: color) -> color {
@@ -33,23 +85,6 @@ export global Globals {
 //        return complementary-color(relative-to-color).brighter(1.5);
 //        return complementary-color(relative-to-color).brighter(2);
     }
-}
-
-// In a logical order by colour,
-// as in the Sleek-ui documentation and https://ant.design/docs/spec/colors.
-export enum ColourScheme {
-    DustRed,
-    Volcano,
-    SunsetOrange,
-    CalendulaGold,
-    SunriseYellow,
-    Lime,
-    PolarGreen,
-    Cyan,
-    DaybreakBlue,
-    GeekBlue,
-    GoldenPurple,
-    FrenchMagenta,
 }
 
 export enum SlintMessageType {

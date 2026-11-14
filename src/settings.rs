@@ -15,6 +15,7 @@ pub struct Settings {
     ignore_version: String,
     main_window_x: i32,
     main_window_y: i32,
+    colour_scheme: u8,
     midi_input_device: String,
     midi_output_device: String,
     down_cc_no: u8,
@@ -32,6 +33,7 @@ impl Settings {
             ignore_version: String::new(),
             main_window_x: 0,
             main_window_y: 0,
+            colour_scheme: 11,
             midi_input_device: String::new(),
             midi_output_device: String::new(),
             down_cc_no: CcNoRangeDefaults::down_cc_no(),
@@ -71,6 +73,12 @@ impl MidiDesktopSettings for Settings {
         self.main_window_y = value;
     }
 
+    fn colour_scheme(&self) -> u8 { self.colour_scheme }
+
+    fn set_colour_scheme(&mut self, value: u8) {
+        self.colour_scheme = value;
+    }
+
     fn midi_input_device(&self) -> &str {
         &self.midi_input_device
     }
@@ -93,6 +101,7 @@ impl MidiDesktopSettings for Settings {
             self.ignore_version = settings.ignore_version;
             self.main_window_x = settings.main_window_x;
             self.main_window_y = settings.main_window_y;
+            self.colour_scheme = settings.colour_scheme;
             self.midi_input_device = settings.midi_input_device;
             self.midi_output_device = settings.midi_output_device;
             self.down_cc_no = settings.down_cc_no;

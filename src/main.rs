@@ -9,9 +9,7 @@ use log::{debug, trace};
 use slint::{CloseRequestResponse, ComponentHandle, Weak};
 use app_info::{APP_TITLE, COPYRIGHT, DOCUMENTATION_LINK, LICENSE, PROJECT_LINK, RELEASES_LINK,
                VERSION};
-use octave_up_down::{AboutWindow, MainWindow, NewVersionWindow, Presenter, SharedPresenter,
-                     SlintDeviceType,
-                     UiDeviceStrategy, UiInputStrategy, UiMethods, UiOutputStrategy};
+use octave_up_down::{AboutWindow, ColourScheme, MainWindow, NewVersionWindow, Presenter, SharedPresenter, SlintDeviceType, UiDeviceStrategy, UiInputStrategy, UiMethods, UiOutputStrategy};
 
 fn main() -> Result<(), slint::PlatformError> {
     // Initialise logging. Levels are chosen at runtime via the RUST_LOG env var
@@ -99,8 +97,9 @@ fn init_ui_handlers(main_window: &MainWindow,
     {
         let about_window = Rc::clone(&about_window);
         let ui_methods_clone = ui_methods.clone();
+        let main_window_weak = main_window.as_weak();
         main_window.on_show_about_window(move || {
-            show_about_window(about_window.clone(), ui_methods_clone.clone());
+            show_about_window(about_window.clone(), ui_methods_clone.clone(), main_window_weak.clone());
         });
     }
 //     {
@@ -207,23 +206,24 @@ fn perform_close<'a>(
         && ComponentHandle::window(&new_version_window).is_visible() {
         new_version_window.hide().ok();
     }
-    let (x, y) = if let Some(main_window) = main_window_weak.upgrade() {
+    let (x, y, colour_scheme) = if let Some(main_window) = main_window_weak.upgrade() {
+        let scheme = main_window.get_colour_scheme();
         let pos = main_window.window().position();
         #[cfg(target_os = "macos")]
         {
             let scale_factor = main_window.window().scale_factor();
             let logical_x = (pos.x as f32 / scale_factor).round() as i32;
             let logical_y = (pos.y as f32 / scale_factor).round() as i32;
-            (logical_x, logical_y)
+            (logical_x, logical_y, scheme)
         }
         #[cfg(not(target_os = "macos"))]
         {
-            (pos.x, pos.y)
+            (pos.x, pos.y, scheme)
         }
     } else {
-        (0, 0)
+        (0, 0, ColourScheme::DaybreakBlue)
     };
-    presenter.lock()?.close(x, y)
+    presenter.lock()?.close(x, y, colour_scheme)
 }
 
 fn handle_close_request(main_window_weak: &Weak<MainWindow>, presenter: &SharedPresenter,
@@ -284,8 +284,15 @@ fn spawn_presenter_action(
     });
 }
 
-fn show_about_window(about_window: Rc<RefCell<Option<AboutWindow>>>, ui_methods: Arc<UiMethods>) {
+fn show_about_window(about_window: Rc<RefCell<Option<AboutWindow>>>, ui_methods: Arc<UiMethods>,
+                     main_window_weak: Weak<MainWindow>) {
     let dialog = AboutWindow::new().unwrap();
+    // Each top-level Slint window holds its own instance of every global it uses (including
+    // UAppTheme), so the colour scheme must be forwarded explicitly from the main window rather
+    // than relying on a single shared global instance.
+    if let Some(main_window) = main_window_weak.upgrade() {
+        dialog.set_colour_scheme(main_window.get_colour_scheme());
+    }
     dialog.set_window_title(format!("About {}", APP_TITLE).into());
     dialog.set_app_title(APP_TITLE.into());
     dialog.set_version(VERSION.into());

@@ -1,13 +1,15 @@
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use i_slint_backend_winit::WinitWindowAccessor;
-use log::trace;
+use log::{debug, trace};
+//use log::trace;
 use slint::{ComponentHandle, PhysicalPosition, Weak, WindowPosition};
 #[cfg(target_os = "macos")]
 use slint::LogicalPosition;
 use app_info::APP_TITLE;
 use simonor::{DeviceType};
-use crate::{CenteredDialog, MainWindow, NewVersionCallbacks, NewVersionWindow, OptionsModel,
+use crate::{CenteredDialog, ColourScheme, MainWindow, NewVersionCallbacks, NewVersionWindow,
+            OptionsModel,
             SlintMessageType, UiDeviceStrategy, UOptionData};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -53,6 +55,7 @@ pub trait IUiMethods: Send + Sync {
     fn show_new_version_window(&self, new_version: &str, auto_check_new_versions: bool,
                                callbacks: Arc<Mutex<dyn NewVersionCallbacks>>);
     fn set_main_window_position(&self, x: i32, y: i32);
+    fn set_colour_scheme(&self, value: ColourScheme);
     fn set_down_cc_no(&self, value: u8);
     fn set_up_cc_no(&self, value: u8);
     fn set_in_cc_no(&self, value: u8);
@@ -235,8 +238,15 @@ impl IUiMethods for UiMethods {
         let new_version_string = new_version.to_string();
         let new_version_window_weak = self.new_version_window_weak.clone();
         let self_clone = self.clone();
+        let main_window_weak = self.main_window_weak.clone();
         self.with_ui_thread(move || {
             let dialog_borrow = new_version_window_weak.upgrade().unwrap();
+            // Each top-level Slint window holds its own instance of every global it uses
+            // (including UAppTheme), so the dialog's colour scheme must be forwarded explicitly
+            // from the main window rather than relying on a single shared global instance.
+            if let Some(main_window) = main_window_weak.upgrade() {
+                dialog_borrow.set_colour_scheme(main_window.get_colour_scheme());
+            }
             // Re-setup callbacks each time as the window might be reused
             dialog_borrow.set_auto_check_new_versions(auto_check_new_versions);
             dialog_borrow.set_message(
@@ -296,6 +306,13 @@ impl IUiMethods for UiMethods {
                 #[cfg(not(target_os = "macos"))]
                 main_window.window().set_position(PhysicalPosition { x, y });
             }
+        });
+    }
+
+    fn set_colour_scheme(&self, value: ColourScheme) {
+        self.with_main_window(move |main_window| {
+            debug!("set_colour_scheme: {:?}", value as u8);
+            main_window.set_colour_scheme(value);
         });
     }
 

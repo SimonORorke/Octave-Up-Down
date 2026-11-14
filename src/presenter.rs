@@ -5,7 +5,8 @@ use log::{trace};
 use simonor::{IMidiHub, IMidiSender, MidiHub, MidiSender, ReleaseInfo,
               SharedMidiHub, SharedMidiSender, SharedReleaseInfo, SharedOutput, VersionChecker};
 use app_info::{APP_TITLE, RELEASES_LINK, VERSION};
-use crate::{IMidiProcessor, ISettings, IUiMethods, MidiProcessor, Presentation, Settings,
+use crate::{ColourScheme, IMidiProcessor, ISettings, IUiMethods, MidiProcessor,
+            Presentation, Settings,
             SharedMidiProcessor, UiDeviceStrategy, UiInputStrategy, UiOutputStrategy};
 
 pub struct Presenter {
@@ -55,6 +56,7 @@ impl Presenter {
         let ignore_version: String;
         let main_window_x: i32;
         let main_window_y: i32;
+        let colour_scheme: ColourScheme;
         let input_device_name: String;
         let output_device_name: String;
         let down_cc_no: u8;
@@ -68,6 +70,7 @@ impl Presenter {
                 ignore_version = self.settings.ignore_version().to_string();
                 main_window_x = self.settings.main_window_x();
                 main_window_y = self.settings.main_window_y();
+                colour_scheme = colour_scheme_from_u8(self.settings.colour_scheme());
                 input_device_name = self.settings.midi_input_device().to_string();
                 output_device_name = self.settings.midi_output_device().to_string();
                 down_cc_no = self.settings.down_cc_no();
@@ -81,6 +84,7 @@ impl Presenter {
             }
         }
         self.presentation.set_main_window_position(main_window_x, main_window_y);
+        self.presentation.set_colour_scheme(colour_scheme);
         if auto_check_new_versions {
             trace!("init: Checking for new version");
             self.find_new_version(true, &ignore_version);
@@ -124,10 +128,12 @@ impl Presenter {
         trace!("check_for_updates: Done");
     }
 
-    pub fn close(&mut self, main_window_x: i32, main_window_y: i32) -> Result<(), Box<dyn Error>> {
+    pub fn close(&mut self, main_window_x: i32, main_window_y: i32, 
+                 colour_scheme: ColourScheme) -> Result<(), Box<dyn Error>> {
         self.midi_hub.lock().unwrap_or_else(|e| e.into_inner()).close();
         self.settings.set_main_window_x(main_window_x);
         self.settings.set_main_window_y(main_window_y);
+        self.settings.set_colour_scheme(colour_scheme as u8);
         if let Err(err) = self.settings.write_to_file() {
             self.presentation.show_error(&err.to_string());
             return Err(err)
@@ -310,3 +316,23 @@ simonor::impl_mutex_listener!(OctaveShiftListener for Presenter {
 });
 
 pub type SharedPresenter = Arc<Mutex<Presenter>>;
+
+/// Converts a `u8` (as persisted in `Settings`) back into a `ColourScheme`, falling back to
+/// `daybreak_blue` for any value outside the valid range.
+fn colour_scheme_from_u8(value: u8) -> ColourScheme {
+    match value {
+        0 => ColourScheme::DustRed,
+        1 => ColourScheme::Volcano,
+        2 => ColourScheme::SunsetOrange,
+        3 => ColourScheme::CalendulaGold,
+        4 => ColourScheme::SunriseYellow,
+        5 => ColourScheme::Lime,
+        6 => ColourScheme::PolarGreen,
+        7 => ColourScheme::Cyan,
+        8 => ColourScheme::DaybreakBlue,
+        9 => ColourScheme::GeekBlue,
+        10 => ColourScheme::GoldenPurple,
+        11 => ColourScheme::FrenchMagenta,
+        _ => ColourScheme::DaybreakBlue,
+    }
+}

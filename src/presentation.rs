@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use log::{trace};
-use crate::{IUiMethods, MessageType, NewVersionCallbacks, UiDeviceStrategy};
+use crate::{ColourScheme, IUiMethods, MessageType, NewVersionCallbacks, UiDeviceStrategy};
 
 /// The view-facing facade the `Presenter` speaks through. If need be, it can be shared with other
 /// types via `Clone`.
@@ -28,6 +28,10 @@ impl Presentation {
 
     pub(crate) fn set_main_window_position(&self, x: i32, y: i32) {
         self.ui_methods.set_main_window_position(x, y);
+    }
+
+    pub(crate) fn set_colour_scheme(&self, value: ColourScheme) {
+        self.ui_methods.set_colour_scheme(value);
     }
 
     pub(crate) fn set_devices_model(&self, device_names: &[String],

@@ -27,6 +27,8 @@ export component MainWindow inherits NiceWindow {
     in property <int> out_cc_no;
     callback out_cc_no_changed(value: int);
 
+    in-out property<ColourScheme> colour_scheme <=> self.nice_colour_scheme;
+
     callback connect_device(device_type: SlintDeviceType);
     callback refresh_devices(device_type: SlintDeviceType);
 
@@ -140,7 +142,6 @@ export component MainWindow inherits NiceWindow {
             if (i == 1) { root.show_about_window(); }
             if (i == 2) {
                 root.show_colour_scheme_window();
-//                UAppTheme.dark.primary = UAppTheme.volcano; // It works!
             }
             if (i == 3) { root.check_for_updates(); }
         }
