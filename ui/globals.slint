@@ -62,15 +62,15 @@ export global Globals {
             ? UDarkColors.volcano : UDarkColors.dust-red;
     }
 
-    // Returns the complementary (opposite) colour of the specified colour.
-    function complementary-color(relative-to-color: color) -> color {
-        return hsv(
-            mod(relative-to-color.to-hsv().hue + 180, 360),
-            relative-to-color.to-hsv().saturation,
-            relative-to-color.to-hsv().value,
-            relative-to-color.to-hsv().alpha,
-        );
-    }
+//    // Returns the complementary (opposite) colour of the specified colour.
+//    function complementary-color(relative-to-color: color) -> color {
+//        return hsv(
+//            mod(relative-to-color.to-hsv().hue + 180, 360),
+//            relative-to-color.to-hsv().saturation,
+//            relative-to-color.to-hsv().value,
+//            relative-to-color.to-hsv().alpha,
+//        );
+//    }
 
 //    function invert-lightness(relative-to-color: color) -> color {
 //        return oklch(
@@ -82,10 +82,13 @@ export global Globals {
 //    }
 
     function to-background-color(relative-to-color: color) -> color {
+        return relative-to-color.darker(0.7);
+//        return relative-to-color.darker(0.5);
+//        return relative-to-color.darker(0.75);
+//        return complementary-color(relative-to-color).brighter(0.75);
 //        return complementary-color(relative-to-color);
 //        return invert-lightness(complementary-color(relative-to-color));
 //        return complementary-color(relative-to-color).brighter(0.5);
-        return complementary-color(relative-to-color).brighter(0.75);
 //        return complementary-color(relative-to-color).brighter(1);
 //        return complementary-color(relative-to-color).brighter(1.25);
 //        return complementary-color(relative-to-color).brighter(1.5);
