@@ -15,13 +15,14 @@ export component MessageText inherits UText {
     function get-color() -> color {
         // The "hover" brush is lightest against the dark "selected" brush of the background.
         if (root.message-type == SlintMessageType.Error) {
-            return UAppTheme.dust-red.hover;
+            return UAppTheme.dark.danger.hover;
         } else if (root.message-type == SlintMessageType.Info) {
-            return UAppTheme.geek-blue.hover;
+            return UAppTheme.dark.primary.hover;
+//            return UAppTheme.dark.success.hover;
         } else if (root.message-type == SlintMessageType.Success) {
-            return UAppTheme.polar-green.hover;
+            return UAppTheme.dark.success.hover;
         } else { // Warning
-            return UAppTheme.sunset-orange.hover;
+            return UAppTheme.dark.warning.hover;
         }
     }
 }
