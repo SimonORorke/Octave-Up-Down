@@ -4,6 +4,7 @@ import { UAppTheme } from "@sleek-ui/app-theme.slint";
 import { UButtonVariant } from "@sleek-ui/common.slint";
 import { ColourScheme, Globals } from "globals.slint";
 import { NiceWindow } from "components/nice_window.slint";
+import { LinkText } from "components/text.slint";
 
 export component AboutWindow inherits NiceWindow {
     init => {
@@ -65,21 +66,18 @@ export component AboutWindow inherits NiceWindow {
                         UText {
                             text: root.app_title;
                             font-size: 32px;
-                            horizontal_alignment: left;
                         }
                     }
 
                     VerticalBox {
                         UText {
                             text: "Version " + root.version;
-                            horizontal_alignment: left;
                         }
                     }
 
                     VerticalBox {
                         UText {
                             text: root.copyright;
-                            horizontal_alignment: left;
                         }
                     }
 
@@ -88,9 +86,8 @@ export component AboutWindow inherits NiceWindow {
                         clicked => { root.open_project_link(); }
 
                         VerticalBox {
-                            UText {
+                            LinkText {
                                 text: root.project_link;
-                                horizontal_alignment: left;
                             }
                         }
                     }
@@ -98,7 +95,6 @@ export component AboutWindow inherits NiceWindow {
                     VerticalBox {
                         UText {
                             text: "Licence: " + root.license;
-                            horizontal_alignment: left;
                         }
                     }
                 }

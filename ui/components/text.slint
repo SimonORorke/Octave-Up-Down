@@ -2,6 +2,10 @@ import { UText } from "@sleek-ui/widgets.slint";
 import { UAppTheme } from "@sleek-ui/app-theme.slint";
 import { SlintMessageType } from "../globals.slint";
 
+export component LinkText inherits UText {
+    color: UAppTheme.dark.primary.hover; // Hover is lightest
+}
+
 export component MessageText inherits UText {
     in property <SlintMessageType> message-type;
 
