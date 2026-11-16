@@ -9,7 +9,9 @@ use log::{debug, trace};
 use slint::{CloseRequestResponse, ComponentHandle, Weak};
 use app_info::{APP_TITLE, COPYRIGHT, DOCUMENTATION_LINK, LICENSE, PROJECT_LINK, RELEASES_LINK,
                VERSION};
-use octave_up_down::{AboutWindow, ColourScheme, MainWindow, NewVersionWindow, Presenter, SharedPresenter, SlintDeviceType, UiDeviceStrategy, UiInputStrategy, UiMethods, UiOutputStrategy};
+use octave_up_down::{AboutWindow, ColourScheme, ColourSchemeWindow, MainWindow,
+                     NewVersionWindow, Presenter, SharedPresenter, SlintDeviceType,
+                     UiDeviceStrategy, UiInputStrategy, UiMethods, UiOutputStrategy};
 
 fn main() -> Result<(), slint::PlatformError> {
     // Initialise logging. Levels are chosen at runtime via the RUST_LOG env var
@@ -30,10 +32,11 @@ fn main() -> Result<(), slint::PlatformError> {
         ));
     let presenter: SharedPresenter = Arc::new(Mutex::new(Presenter::new(ui_methods.clone())));
     let about_window: Rc<RefCell<Option<AboutWindow>>> = Rc::new(RefCell::new(None));
+    let colour_scheme_window: Rc<RefCell<Option<ColourSchemeWindow>>> = Rc::new(RefCell::new(None));
     init_ui_handlers(&main_window,
                      &new_version_window,
                      presenter.clone(), ui_methods.clone(),
-                     about_window.clone()
+                     about_window.clone(), colour_scheme_window.clone()
     );
     // Initialise presenter on a background thread so that UI callbacks within
     // init() can use invoke_from_event_loop without deadlocking.
@@ -89,7 +92,7 @@ fn init_ui_handlers(main_window: &MainWindow,
                     new_version_window: &NewVersionWindow,
                     presenter: SharedPresenter, ui_methods: Arc<UiMethods>,
                     about_window: Rc<RefCell<Option<AboutWindow>>>,
-                    // colour_scheme_window: Rc<RefCell<Option<ColourSchemeWindow>>>,
+                    colour_scheme_window: Rc<RefCell<Option<ColourSchemeWindow>>>,
 ) {
     main_window.on_open_documentation(move || {
         open::that(DOCUMENTATION_LINK).unwrap();
@@ -99,24 +102,28 @@ fn init_ui_handlers(main_window: &MainWindow,
         let ui_methods_clone = ui_methods.clone();
         let main_window_weak = main_window.as_weak();
         main_window.on_show_about_window(move || {
-            show_about_window(about_window.clone(), ui_methods_clone.clone(), main_window_weak.clone());
+            show_about_window(about_window.clone(), ui_methods_clone.clone(),
+                              main_window_weak.clone());
         });
     }
-//     {
-//         let colour_scheme_window = Rc::clone(&colour_scheme_window);
-//         let ui_methods_clone = ui_methods.clone();
-//         main_window.on_show_colour_scheme_window(move || {
-//             show_colour_scheme_window(colour_scheme_window.clone(), ui_methods_clone.clone());
-//         });
-//     }
+    {
+        let colour_scheme_window = Rc::clone(&colour_scheme_window);
+        let ui_methods_clone = ui_methods.clone();
+        let main_window_weak = main_window.as_weak();
+        main_window.on_show_colour_scheme_window(move || {
+            show_colour_scheme_window(colour_scheme_window.clone(), ui_methods_clone.clone(),
+                                      main_window_weak.clone());
+        });
+    }
     {
         let presenter: SharedPresenter = Arc::clone(&presenter);
         let main_window_weak = main_window.as_weak();
         let about_window = Rc::clone(&about_window);
+        let colour_scheme_window = Rc::clone(&colour_scheme_window);
         let new_version_window_weak = new_version_window.as_weak();
         main_window.window().on_close_requested(move || {
-            handle_close_request(&main_window_weak, &presenter, &about_window,
-                                 new_version_window_weak.clone())
+            handle_close_request(&main_window_weak, &presenter, &about_window, 
+                                 &colour_scheme_window, new_version_window_weak.clone())
         });
     }
     #[cfg(target_os = "macos")]
@@ -125,10 +132,12 @@ fn init_ui_handlers(main_window: &MainWindow,
         let main_window_weak = main_window.as_weak();
         let presenter = Arc::clone(&presenter);
         let about_window = Rc::clone(&about_window);
+        let colour_scheme_window = Rc::clone(&colour_scheme_window);
         let new_version_window_weak = new_version_window.as_weak();
         MAC_TERMINATION_CLOSURE.with(|closure| {
             *closure.borrow_mut() = Some(Box::new(move || {
-                let _ = perform_close(&main_window_weak, &presenter, &about_window, &new_version_window_weak);
+                let _ = perform_close(&main_window_weak, &presenter, &about_window,
+                                      &colour_scheme_window, &new_version_window_weak);
             }));
         });
         unsafe {
@@ -192,6 +201,7 @@ fn perform_close<'a>(
     main_window_weak: &'a Weak<MainWindow>,
     presenter: &'a SharedPresenter,
     about_window: &'a Rc<RefCell<Option<AboutWindow>>>,
+    colour_scheme_window: &'a Rc<RefCell<Option<ColourSchemeWindow>>>,
     new_version_window_weak: &'a Weak<NewVersionWindow>,
 ) -> Result<(), Box<dyn std::error::Error + 'a>> {
     if IS_CLOSED.swap(true, Ordering::SeqCst) {
@@ -199,6 +209,10 @@ fn perform_close<'a>(
     }
     trace!("main.perform_close");
     if let Some(dialog) = about_window.borrow().as_ref()
+        && ComponentHandle::window(dialog).is_visible() {
+        dialog.hide().ok();
+    }
+    if let Some(dialog) = colour_scheme_window.borrow().as_ref()
         && ComponentHandle::window(dialog).is_visible() {
         dialog.hide().ok();
     }
@@ -228,6 +242,7 @@ fn perform_close<'a>(
 
 fn handle_close_request(main_window_weak: &Weak<MainWindow>, presenter: &SharedPresenter,
                         about_window: &Rc<RefCell<Option<AboutWindow>>>,
+                        colour_scheme_window: &Rc<RefCell<Option<ColourSchemeWindow>>>,
                         new_version_window_weak: Weak<NewVersionWindow>
 ) -> CloseRequestResponse {
     trace!("main.handle_close_request");
@@ -235,7 +250,7 @@ fn handle_close_request(main_window_weak: &Weak<MainWindow>, presenter: &SharedP
         // If a close error message is already shown, allow the window to be closed.
         return CloseRequestResponse::HideWindow;
     }
-    if perform_close(main_window_weak, presenter, about_window,
+    if perform_close(main_window_weak, presenter, about_window, colour_scheme_window,
                      &new_version_window_weak
     ).is_err() {
         IS_CLOSE_ERROR_SHOWN.store(true, Ordering::Relaxed);
@@ -315,6 +330,31 @@ fn show_about_window(about_window: Rc<RefCell<Option<AboutWindow>>>, ui_methods:
     });
     ui_methods.show_dialog_in_centre_of_main_window(&dialog);
     *about_window.borrow_mut() = Some(dialog);
+}
+
+fn show_colour_scheme_window(colour_scheme_window: Rc<RefCell<Option<ColourSchemeWindow>>>, ui_methods: Arc<UiMethods>,
+                     main_window_weak: Weak<MainWindow>) {
+    let dialog = ColourSchemeWindow::new().unwrap();
+    // Each top-level Slint window holds its own instance of every global it uses (including
+    // UAppTheme), so the colour scheme must be forwarded explicitly from the main window rather
+    // than relying on a single shared global instance.
+    if let Some(main_window) = main_window_weak.upgrade() {
+        dialog.set_colour_scheme(main_window.get_colour_scheme());
+    }
+    dialog.set_window_title(format!("{} - Colour Scheme", APP_TITLE).into());
+    // Why is there a dialog.on_close_window before the dialog.show().unwrap()?
+    // The callback must be registered before show() to avoid a race condition:
+    // if the user somehow closed the window during or immediately after show() returned,
+    // the close handler needs to already be in place. More practically, it's just the
+    // conventional setup pattern — configure all properties and callbacks first,
+    // then show. In practice for a dialog like this it makes no functional difference,
+    // but registering handlers before showing is the safe, idiomatic order.
+    dialog.on_close_window({
+        let dialog_weak = dialog.as_weak();
+        move || { dialog_weak.unwrap().hide().unwrap(); }
+    });
+    ui_methods.show_dialog_in_centre_of_main_window(&dialog);
+    *colour_scheme_window.borrow_mut() = Some(dialog);
 }
 
 static IS_CLOSED: AtomicBool = AtomicBool::new(false);

@@ -1,0 +1,161 @@
+import { VerticalBox, } from "std-widgets.slint";
+import { UAppTheme } from "@sleek-ui/app-theme.slint";
+import { UButtonVariant } from "@sleek-ui/common.slint";
+import { UButton, USelect } from "@sleek-ui/widgets.slint";
+import { ColourScheme } from "globals.slint";
+import { NiceWindow } from "components/nice_window.slint";
+
+export component ColourSchemeWindow inherits NiceWindow {
+    init => {
+        self.nice_init();
+        keyboard_shortcuts_scope.focus();
+    }
+    preferred-width: 480px;
+    preferred-height: 135px;
+
+    in property <string> window_title <=> self.nice_window_title;
+    in-out property<ColourScheme> colour_scheme <=> self.nice_colour_scheme;
+    out property <length> preferred_w: root.preferred-width;
+    out property <length> preferred_h: root.preferred-height;
+
+    callback close_window();
+
+    function get_selected-scheme-index() -> int {
+        if self.colour_scheme == ColourScheme.dust-red {
+            return 0;
+        }
+        if self.colour_scheme == ColourScheme.volcano {
+            return 1;
+        }
+        if self.colour_scheme == ColourScheme.sunset-orange {
+            return 2;
+        }
+        if self.colour_scheme == ColourScheme.calendula-gold {
+            return 3;
+        }
+        if self.colour_scheme == ColourScheme.sunrise-yellow {
+            return 4;
+        }
+        if self.colour_scheme == ColourScheme.lime {
+            return 5;
+        }
+        if self.colour_scheme == ColourScheme.polar-green {
+            return 6;
+        }
+        if self.colour_scheme == ColourScheme.cyan {
+            return 7;
+        }
+        if self.colour_scheme == ColourScheme.daybreak-blue {
+            return 8;
+        }
+        if self.colour_scheme == ColourScheme.geek-blue {
+            return 9;
+        }
+        if self.colour_scheme == ColourScheme.golden-purple {
+            return 10;
+        }
+        return 11; // french-magenta
+    }
+
+    function index_to_colour_scheme(index: int) -> ColourScheme {
+        if index == 0 {
+            return ColourScheme.dust-red;
+        }
+        if index == 1 {
+            return ColourScheme.volcano;
+        }
+        if index == 2 {
+            return ColourScheme.sunset-orange;
+        }
+        if index == 3 {
+            return ColourScheme.calendula-gold;
+        }
+        if index == 4 {
+            return ColourScheme.sunrise-yellow;
+        }
+        if index == 5 {
+            return ColourScheme.lime;
+        }
+        if index == 6 {
+            return ColourScheme.polar-green;
+        }
+        if index == 7 {
+            return ColourScheme.cyan;
+        }
+        if index == 8 {
+            return ColourScheme.daybreak-blue;
+        }
+        if index == 9 {
+            return ColourScheme.geek-blue;
+        }
+        if index == 10 {
+            return ColourScheme.golden-purple;
+        }
+        return ColourScheme.french-magenta;
+    }
+
+    keyboard_shortcuts_scope := FocusScope {
+        key-pressed(event) => {
+            // Close window keyboard shortcuts
+            if (event.text == Key.Escape || event.text == Key.Return) {
+                root.close_window();
+                return EventResult.accept;
+            }
+            EventResult.reject
+        }
+
+        VerticalLayout {
+            alignment: start; // Stops spreading out when window lenghthened.
+            padding: UAppTheme.padding-medium;
+            spacing: UAppTheme.spacing-medium;
+
+            message_line := HorizontalLayout {
+                message_box := VerticalBox {
+                    StyledText {
+                        text: @markdown("Select an [Ant Design](https://ant.design/docs/spec/colors) colour scheme:");
+                        default-font-size: UAppTheme.font-size-medium;
+                        link-color: UAppTheme.primary.hover;
+                        link-clicked(link) => {
+                            Platform.open-url(link);
+                        }
+                    }
+                }
+            }
+
+            select_line := HorizontalLayout {
+                alignment: space-between;
+                scheme-select := USelect {
+                    options: [
+                        {text: "Dust Red", value: "dust-red", enabled: true},
+                        {text: "Volcano", value: "volcano", enabled: true},
+                        {text: "Sunset Orange", value: "sunset-orange", enabled: true},
+                        {text: "Calendula Gold", value: "calendula-gold", enabled: true},
+                        {text: "Sunrise Yellow", value: "sunrise-yellow", enabled: true},
+                        {text: "Lime", value: "lime", enabled: true},
+                        {text: "Polar Green", value: "polar-green", enabled: true},
+                        {text: "Cyan", value: "cyan", enabled: true},
+                        {text: "Daybreak Blue", value: "daybreak-blue", enabled: true},
+                        {text: "Geek Blue", value: "geek-blue", enabled: true},
+                        {text: "Golden Purple", value: "golden-purple", enabled: true},
+                        {text: "French Magenta", value: "french-magenta", enabled: true},
+                    ];
+                    preferred-width: 420px;
+                    current-index: root.get_selected-scheme-index();
+                    changed current-index => {
+                        root.colour_scheme = root.index_to_colour_scheme(self.current-index);
+                    }
+                }
+            }
+
+            close_line := HorizontalLayout {
+                alignment: space-between;
+                padding-top: UAppTheme.padding-medium;
+                close_button := UButton {
+                    text: "Close";
+                    variant: UButtonVariant.primary;
+                    clicked => { root.close_window(); }
+                }
+            }
+        }
+    }
+}
