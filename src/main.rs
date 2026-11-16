@@ -110,9 +110,12 @@ fn init_ui_handlers(main_window: &MainWindow,
         let colour_scheme_window = Rc::clone(&colour_scheme_window);
         let ui_methods_clone = ui_methods.clone();
         let main_window_weak = main_window.as_weak();
+        let about_window = Rc::clone(&about_window);
+        let new_version_window_weak = new_version_window.as_weak();
         main_window.on_show_colour_scheme_window(move || {
             show_colour_scheme_window(colour_scheme_window.clone(), ui_methods_clone.clone(),
-                                      main_window_weak.clone());
+                                      main_window_weak.clone(),
+                                      about_window.clone(), new_version_window_weak.clone());
         });
     }
     {
@@ -332,8 +335,13 @@ fn show_about_window(about_window: Rc<RefCell<Option<AboutWindow>>>, ui_methods:
     *about_window.borrow_mut() = Some(dialog);
 }
 
-fn show_colour_scheme_window(colour_scheme_window: Rc<RefCell<Option<ColourSchemeWindow>>>, ui_methods: Arc<UiMethods>,
-                     main_window_weak: Weak<MainWindow>) {
+fn show_colour_scheme_window(
+    colour_scheme_window: Rc<RefCell<Option<ColourSchemeWindow>>>,
+    ui_methods: Arc<UiMethods>,
+    main_window_weak: Weak<MainWindow>,
+    about_window: Rc<RefCell<Option<AboutWindow>>>,
+    new_version_window_weak: Weak<NewVersionWindow>,
+) {
     let dialog = ColourSchemeWindow::new().unwrap();
     // Each top-level Slint window holds its own instance of every global it uses (including
     // UAppTheme), so the colour scheme must be forwarded explicitly from the main window rather
@@ -341,8 +349,8 @@ fn show_colour_scheme_window(colour_scheme_window: Rc<RefCell<Option<ColourSchem
     if let Some(main_window) = main_window_weak.upgrade() {
         dialog.set_colour_scheme(main_window.get_colour_scheme());
     }
+    // The Window is too narrow to display the app title on its title bar.
     dialog.set_window_title("Colour Scheme".into());
-    // dialog.set_window_title(format!("{} - Colour Scheme", APP_TITLE).into());
     // Why is there a dialog.on_close_window before the dialog.show().unwrap()?
     // The callback must be registered before show() to avoid a race condition:
     // if the user somehow closed the window during or immediately after show() returned,
@@ -353,6 +361,28 @@ fn show_colour_scheme_window(colour_scheme_window: Rc<RefCell<Option<ColourSchem
     dialog.on_close_window({
         let dialog_weak = dialog.as_weak();
         move || { dialog_weak.unwrap().hide().unwrap(); }
+    });
+    dialog.on_colour_scheme_changed({
+        let dialog_weak = dialog.as_weak();
+        move || {
+            let new_colour_scheme = dialog_weak.unwrap().get_colour_scheme();
+            // Each window has its own version of the colour scheme and all other globals.
+            // So each window needs to be updated separately.
+            // Dialog windows only need to be updated right now if they are currently open,
+            // as their colour schemes will be set to be the same as the main window's when they
+            // are opened.
+            if let Some(main_window) = main_window_weak.upgrade() {
+                main_window.set_colour_scheme(new_colour_scheme);
+            }
+            if let Some(about_dialog) = about_window.borrow().as_ref()
+                && ComponentHandle::window(about_dialog).is_visible() {
+                about_dialog.set_colour_scheme(new_colour_scheme);
+            }
+            if let Some(new_version_window) = new_version_window_weak.upgrade()
+                && ComponentHandle::window(&new_version_window).is_visible() {
+                new_version_window.set_colour_scheme(new_colour_scheme);
+            }
+        }
     });
     ui_methods.show_dialog_in_centre_of_main_window(&dialog);
     *colour_scheme_window.borrow_mut() = Some(dialog);

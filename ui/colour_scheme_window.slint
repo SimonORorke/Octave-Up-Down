@@ -20,6 +20,7 @@ export component ColourSchemeWindow inherits NiceWindow {
     out property <length> preferred_h: root.preferred-height;
 
     callback close_window();
+    callback colour_scheme_changed();
 
     function get_selected-scheme-index() -> int {
         if self.colour_scheme == ColourScheme.dust-red {
@@ -144,6 +145,7 @@ export component ColourSchemeWindow inherits NiceWindow {
                     current-index: root.get_selected-scheme-index();
                     changed current-index => {
                         root.colour_scheme = root.index_to_colour_scheme(self.current-index);
+                        root.colour_scheme_changed();
                     }
                 }
             }
