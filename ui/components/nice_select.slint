@@ -1,0 +1,44 @@
+import { UOptionData } from "@sleek-ui/common.slint";
+import { USelect } from "@sleek-ui/widgets.slint";
+
+// A Select (drop-down list) widget that supports keyboard navigation
+// with the Up Arrow and Down Arrow keys.
+// Dropping down and navigating the list with keyboard shortcuts is not currently
+// supported, as USelect does not expose its dropdown list.
+export component NiceSelect inherits FocusScope {
+    in-out property <brush> border_color <=> my_select.border_color;
+    in-out property <length> border_width <=> my_select.border_width;
+    in-out property <int> current_index <=> my_select.current_index;
+    out property <bool> has_tab_focus <=> my_select.has_tab_focus;
+    in-out property <[UOptionData]> options <=> my_select.options;
+
+    public function set_focus() {
+        my_select.set_focus();
+    }
+    
+    key-pressed(event) => {
+        if (event.text == Key.UpArrow) {
+            if (root.current_index <= 0) {
+                root.current_index = root.options.length - 1;
+            } else {
+                root.current_index = root.current_index - 1;
+            }
+            return EventResult.accept;
+        }
+        if (event.text == Key.DownArrow) {
+            if (root.current_index >= root.options.length - 1) {
+                root.current_index = 0;
+            } else {
+                root.current_index = root.current_index + 1;
+            }
+            return EventResult.accept;
+        }
+        return EventResult.reject;
+    }
+    
+    my_select := USelect {
+        changed current_index => {
+            root.current_index = self.current-index;
+        }
+    }
+}

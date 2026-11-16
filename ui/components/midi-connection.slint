@@ -1,10 +1,10 @@
 import {
     UButton,
-    USelect,
     UText,
 } from "@sleek-ui/widgets.slint";
 import { UButtonVariant } from "@sleek-ui/common.slint";
 import { UAppTheme } from "@sleek-ui/app-theme.slint";
+import { NiceSelect } from "nice_select.slint";
 import { MessageText } from "text.slint";
 import { SlintMessageType } from "../globals.slint";
 
@@ -44,7 +44,7 @@ export component MidiConnection inherits VerticalLayout {
         VerticalLayout {
             padding-left: UAppTheme.padding-base;
             padding-right: UAppTheme.padding-medium;
-            devices-select := USelect {
+            devices-select := NiceSelect {
                 preferred-width: 420px;
                 current-index: root.selected-device-index;
                 border-width: (root.show-focus-highlight || self.has-tab-focus)

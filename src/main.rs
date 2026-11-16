@@ -341,7 +341,8 @@ fn show_colour_scheme_window(colour_scheme_window: Rc<RefCell<Option<ColourSchem
     if let Some(main_window) = main_window_weak.upgrade() {
         dialog.set_colour_scheme(main_window.get_colour_scheme());
     }
-    dialog.set_window_title(format!("{} - Colour Scheme", APP_TITLE).into());
+    dialog.set_window_title("Colour Scheme".into());
+    // dialog.set_window_title(format!("{} - Colour Scheme", APP_TITLE).into());
     // Why is there a dialog.on_close_window before the dialog.show().unwrap()?
     // The callback must be registered before show() to avoid a race condition:
     // if the user somehow closed the window during or immediately after show() returned,
