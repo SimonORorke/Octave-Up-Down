@@ -21,7 +21,7 @@ fn main() {
         // Generate a manifest to specify the application icon and the exe file properties.
         let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
         let out_dir = std::env::var("OUT_DIR").unwrap();
-        let icon_path = format!("ui/images/{}.ico", app_info::APP_TITLE);
+        let icon_path = "ui/images/Octave Up-Down.ico";
         let version = app_info::VERSION;
         let product_name = app_info::APP_TITLE;
         let copyright = app_info::COPYRIGHT;
