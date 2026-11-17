@@ -3,7 +3,7 @@ import { UVariantType } from "@sleek-ui/common.slint";
 import { SlintMessageType } from "../globals.slint";
 
 export component Alert inherits UAlert {
-    in property <SlintMessageType> message-type;
+    in property <SlintMessageType> message-type: SlintMessageType.Info;
 
     variant: get-variant();
 

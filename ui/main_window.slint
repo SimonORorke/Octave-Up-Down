@@ -40,6 +40,7 @@ export component MainWindow inherits NiceWindow {
     callback show_colour_scheme_window();
 
     public function show_message(message: string, message_type: SlintMessageType) {
+//        debug("MainWindow.show_message: message = " + message);
         alert.message = @markdown("\{message}");
         alert.message_type = message_type;
     }
@@ -108,9 +109,7 @@ export component MainWindow inherits NiceWindow {
                 }
             }
             alert_box := VerticalBox {
-                alert := Alert {
-                    message: @markdown("Radbod, King of the Frisians, is such a rad bod!");
-                }
+                alert := Alert {}
             }
             menu_layout := HorizontalLayout {
                   padding_right: UAppTheme.padding_medium;
