@@ -2,7 +2,7 @@
 
 Octave Up-Down allows a pair of sustain pedals or momentary footswitches to be used instead of the octave shift buttons on a MIDI keyboard to transpose notes and note aftertouch /polyphonic aftertouch / pressure up or down by multiple octaves. A bonus feature allows the control change number of a MIDI controller to be changed: the controller may be one of the pedals used for octave transposition.
 
-<img src="docs\images\Octave Up-Down.png" alt="Octave Up-Down" style="zoom: 80%;" />
+<img src="docs\images\Main Window.png" alt="Main Window" style="zoom: 80%;" />
 
 ## MIDI Connections
 
@@ -25,6 +25,12 @@ Octave Up-Down emulates the usual behaviour or a MIDI keyboard's octave buttons.
 ## Changing a Control Change Number
 
 To change a control change number, specify **In CC No** and **Out CC NO**.  If they are equal, no change will be attempted.  If the CC number changed is that of the Down or Up controller, **Out CC NO** must equal whichever of **Down CC No** or **Up CC No** applies.
+
+## Colour Scheme
+
+To change the colour scheme, click the Menu button bottom-right and open the **Colour Scheme** dialog.
+
+<img src="docs\images\Colour Scheme.png" alt="Colour Scheme" style="zoom: 80%;" />
 
 ## Supported Operating Systems
 
