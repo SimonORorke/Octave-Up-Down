@@ -9,7 +9,12 @@ import { NiceWindow } from "components/nice_window.slint";
 export component ColourSchemeWindow inherits NiceWindow {
     init => {
         self.nice_init();
-        scheme_select.focus();
+    }
+
+    // Called from Rust after the window has been shown, because focusing a widget from
+    // `init` does not work reliably: the window is not yet visible/focused at that point.
+    public function focus_scheme_select() {
+        scheme_select.set_focus();
     }
     preferred-width: 345px;
     preferred-height: 145px;
@@ -99,7 +104,7 @@ export component ColourSchemeWindow inherits NiceWindow {
     keyboard_shortcuts_scope := FocusScope {
         key-pressed(event) => {
             // Close window keyboard shortcuts
-            if (event.text == Key.Escape || event.text == Key.Return) {
+            if (event.text == Key.Escape) { // Return key is used by the Select widget
                 root.close_window();
                 return EventResult.accept;
             }

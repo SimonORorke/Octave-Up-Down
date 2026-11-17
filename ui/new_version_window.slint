@@ -8,10 +8,17 @@ import { NiceWindow } from "components/nice_window.slint";
 export component NewVersionWindow inherits NiceWindow {
     init => {
         self.nice_init();
-        keyboard_shortcuts_scope.focus();
     }
     preferred-width: 480px;
-    preferred-height: 255px;
+    preferred-height: 215px;
+
+    // Called from Rust after the window has been shown, because focusing a widget from
+    // `init` (or via `forward-focus`) does not work reliably across repeated show() calls:
+    // the window is not yet visible/focused the first time, and `forward-focus` only applies
+    // the very first time the window ever receives focus.
+    public function focus_open_release_button() {
+        open_release_button.set_focus();
+    }
 
     in property <bool> auto_check_new_versions;
     in property <string> message;
@@ -30,7 +37,7 @@ export component NewVersionWindow inherits NiceWindow {
     keyboard_shortcuts_scope := FocusScope {
         key-pressed(event) => {
             // Close window keyboard shortcuts
-            if (event.text == Key.Escape) { // Return key is used by other controls
+            if (event.text == Key.Escape) { // Return key is used by the Open button
                 root.close_window();
                 return EventResult.accept;
             }

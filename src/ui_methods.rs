@@ -107,6 +107,7 @@ impl UiMethods {
 
             dialog.window().set_position(WindowPosition::Physical(PhysicalPosition { x, y }));
         }
+        dialog.focus_initial_element();
     }
 
     /// Provide the specified closure with a MainWindow instance without returning a result.
