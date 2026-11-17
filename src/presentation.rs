@@ -73,6 +73,10 @@ impl Presentation {
         self.ui_methods.show_message(message.as_ref(), MessageType::Info);
     }
 
+    pub(crate) fn show_success(&self, message: impl AsRef<str>) {
+        self.ui_methods.show_message(message.as_ref(), MessageType::Success);
+    }
+
     pub(crate) fn show_warning(&self, message: &str) {
         trace!("show_warning: {message}");
         self.ui_methods.show_message(message, MessageType::Warning);
@@ -106,7 +110,7 @@ impl Presentation {
     }
 
     pub(crate) fn midi_connected(&self) {
-        self.show_info(MIDI_CONNECTED);
+        self.show_success(MIDI_CONNECTED);
     }
 }
 

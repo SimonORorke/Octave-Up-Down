@@ -16,6 +16,7 @@ use crate::{CenteredDialog, ColourScheme, MainWindow, NewVersionCallbacks, NewVe
 pub enum MessageType {
     Error,
     Info,
+    Success,
     Warning
 }
 
@@ -344,6 +345,7 @@ impl IUiMethods for UiMethods {
 fn slint_message_type(message_type: MessageType) -> SlintMessageType {
     match message_type {
         MessageType::Info => SlintMessageType::Info,
+        MessageType::Success => SlintMessageType::Success,
         MessageType::Warning => SlintMessageType::Warning,
         MessageType::Error => SlintMessageType::Error,
     }
