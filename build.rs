@@ -15,6 +15,17 @@ fn main() {
     slint_build::compile_with_config("ui/main_window.slint", config).unwrap();
 
     // Check the target platform instead of using a build directive,
+    // in case the build script is run on a non-macOS platform.
+    let is_macos = std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos");
+    if is_macos {
+        let mut builder = cc::Build::new();
+        builder.file("src/mac_lifecycle.mm");
+        builder.compile("mac_lifecycle");
+        println!("cargo:rustc-link-lib=framework=Cocoa");
+        println!("cargo:rerun-if-changed=src/mac_lifecycle.mm");
+    }
+
+    // Check the target platform instead of using a build directive,
     // in case the build script is run on a non-Windows platform.
     let is_windows = std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows");
     if is_windows {

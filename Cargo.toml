@@ -51,9 +51,17 @@ googletest = "0.14.3"
 simonor = { path = "../simonor" }
 #simonor = { git = "https://github.com/SimonORorke/simonor.git", branch = "main" }
 app_info = { path = "app_info" }
+cc = "1.11.2"
 # Using embed-resource instead of the more popular winres
 # for application icon and exe file properties because
 # winres puts an oblique before the apostrophe in my name.
 # It's a known shortcoming of winres to always 'escape' an apostrophe.
 embed-resource = "3.0.12"
 slint-build = "=1.18.1"
+
+# macOS Bundle
+[package.metadata.bundle]
+name = "Octave Up-Down"
+identifier = "com.octave.updown"
+icon = ["ui/images/Octave Up-Down.icns"]
+category = "Music"

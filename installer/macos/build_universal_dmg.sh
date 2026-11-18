@@ -36,13 +36,13 @@ cargo build --release --target x86_64-apple-darwin
 echo "==> Creating macOS app bundle structure..."
 cargo bundle --release --target aarch64-apple-darwin
 
-APP_BUNDLE_PATH="target/aarch64-apple-darwin/release/bundle/osx/PitchGrid-Continuum Bridge.app"
-APP_BINARY_PATH="$APP_BUNDLE_PATH/Contents/MacOS/pitchgrid_continuum"
+APP_BUNDLE_PATH="target/aarch64-apple-darwin/release/bundle/osx/Octave Up-Down.app"
+APP_BINARY_PATH="$APP_BUNDLE_PATH/Contents/MacOS/octave-up-down"
 
 echo "==> Merging binaries into a Universal Mach-O binary using lipo..."
 lipo -create \
-  "target/aarch64-apple-darwin/release/pitchgrid_continuum" \
-  "target/x86_64-apple-darwin/release/pitchgrid_continuum" \
+  "target/aarch64-apple-darwin/release/octave-up-down" \
+  "target/x86_64-apple-darwin/release/octave-up-down" \
   -output "$APP_BINARY_PATH"
 
 echo "===> Automating Ad-Hoc Signing"
@@ -55,17 +55,17 @@ file "$APP_BINARY_PATH"
 VERSION=$(cargo metadata --format-version 1 --no-deps | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')
 
 DMG_OUTPUT_DIR="installer/macos"
-DMG_OUTPUT_PATH="$DMG_OUTPUT_DIR/PitchGrid-Continuum-Bridge-${VERSION}-Universal.dmg"
+DMG_OUTPUT_PATH="$DMG_OUTPUT_DIR/Octave-Up-Down-${VERSION}-Universal.dmg"
 
 echo "==> Packaging into DMG with create-dmg..."
 "$CREATE_DMG_CMD" \
-  --volname "PitchGrid-Continuum Bridge" \
+  --volname "Octave Up-Down" \
   --background "$SCRIPT_DIR/dmg_background.png" \
   --window-pos 200 120 \
   --window-size 600 400 \
   --icon-size 100 \
-  --icon "PitchGrid-Continuum Bridge.app" 160 190 \
-  --hide-extension "PitchGrid-Continuum Bridge.app" \
+  --icon "Octave Up-Down.app" 160 190 \
+  --hide-extension "Octave Up-Down.app" \
   --app-drop-link 440 190 \
   --overwrite \
   "$DMG_OUTPUT_PATH" \
