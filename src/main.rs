@@ -24,6 +24,8 @@ fn main() -> Result<(), slint::PlatformError> {
         .format_timestamp_millis().init();
     install_solid_title_bar_platform();
     let main_window = MainWindow::new()?;
+    #[cfg(target_os = "macos")]
+    unsafe { register_app_did_finish_launching_handler(on_mac_app_did_finish_launching) };
     main_window.set_window_title(APP_TITLE.into());
     let new_version_window = create_new_version_window();
     let ui_methods =
@@ -72,6 +74,22 @@ fn install_solid_title_bar_platform() {}
 #[cfg(target_os = "macos")]
 unsafe extern "C" {
     fn register_app_will_terminate_handler(callback: extern "C" fn());
+    fn register_app_did_finish_launching_handler(callback: extern "C" fn());
+    fn set_application_icon(bytes: *const u8, length: usize) -> i32;
+}
+
+#[cfg(target_os = "macos")]
+fn install_mac_application_icon() {
+    let icon = include_bytes!("../ui/images/Octave Up-Down.icns");
+    let installed = unsafe { set_application_icon(icon.as_ptr(), icon.len()) };
+    if installed == 0 {
+        log::warn!("Could not set the macOS application icon");
+    }
+}
+
+#[cfg(target_os = "macos")]
+extern "C" fn on_mac_app_did_finish_launching() {
+    install_mac_application_icon();
 }
 
 #[cfg(target_os = "macos")]
