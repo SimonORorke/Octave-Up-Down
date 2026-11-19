@@ -290,7 +290,7 @@ dependencies = [
 
 [[package]]
 name = "app_info"
-version = "0.1.1"
+version = "1.0.0"
 
 [[package]]
 name = "arboard"
@@ -3490,7 +3490,7 @@ dependencies = [
 
 [[package]]
 name = "octave-up-down"
-version = "0.1.1"
+version = "1.0.0"
 dependencies = [
  "app_info",
  "cc",

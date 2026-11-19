@@ -75,6 +75,7 @@ fn install_solid_title_bar_platform() {}
 unsafe extern "C" {
     fn register_app_will_terminate_handler(callback: extern "C" fn());
     fn register_app_did_finish_launching_handler(callback: extern "C" fn());
+    fn register_app_about_handler(callback: extern "C" fn(), app_name: *const std::os::raw::c_char);
     fn set_application_icon(bytes: *const u8, length: usize) -> i32;
 }
 
@@ -90,17 +91,40 @@ fn install_mac_application_icon() {
 #[cfg(target_os = "macos")]
 extern "C" fn on_mac_app_did_finish_launching() {
     install_mac_application_icon();
+    // The native application menu (with its default "About <AppName>" item) is only guaranteed
+    // to exist once the app has finished launching. Calling register_app_about_handler earlier
+    // (e.g. directly from init_ui_handlers, before the event loop/menu bar is fully set up - as
+    // can happen when the app is launched from an IDE) finds an empty/missing main menu and
+    // silently does nothing, so the redirection must happen here instead.
+    let app_name = std::ffi::CString::new(APP_TITLE).unwrap();
+    unsafe {
+        register_app_about_handler(on_mac_app_about, app_name.as_ptr());
+    }
 }
 
 #[cfg(target_os = "macos")]
 thread_local! {
     static MAC_TERMINATION_CLOSURE: RefCell<Option<Box<dyn FnOnce()>>> = const { RefCell::new(None) };
+    static MAC_ABOUT_CLOSURE: RefCell<Option<Box<dyn Fn()>>> = const { RefCell::new(None) };
 }
 
 #[cfg(target_os = "macos")]
 extern "C" fn on_mac_app_will_terminate() {
     MAC_TERMINATION_CLOSURE.with(|closure| {
         if let Some(f) = closure.borrow_mut().take() {
+            f();
+        }
+    });
+}
+
+// Called when the user clicks the native "About <AppName>" item in the macOS application menu
+// (the one under the app name in the top menu bar). Without this, that item would show the
+// generic macOS About panel instead of the app's own About dialog, even though the app's main
+// window already has a custom About dialog reachable from its own menu button.
+#[cfg(target_os = "macos")]
+extern "C" fn on_mac_app_about() {
+    MAC_ABOUT_CLOSURE.with(|closure| {
+        if let Some(f) = closure.borrow().as_ref() {
             f();
         }
     });
@@ -164,6 +188,22 @@ fn init_ui_handlers(main_window: &MainWindow,
         unsafe {
             register_app_will_terminate_handler(on_mac_app_will_terminate);
         }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        // Redirect the native "About <AppName>" item in the macOS application menu to the app's
+        // own About dialog, instead of the generic macOS About panel shown by default.
+        let about_window = Rc::clone(&about_window);
+        let ui_methods_clone = ui_methods.clone();
+        let main_window_weak = main_window.as_weak();
+        MAC_ABOUT_CLOSURE.with(|closure| {
+            *closure.borrow_mut() = Some(Box::new(move || {
+                show_about_window(about_window.clone(), ui_methods_clone.clone(),
+                                  main_window_weak.clone());
+            }));
+        });
+        // Registration itself is deferred to on_mac_app_did_finish_launching (see its comment),
+        // so that the native application menu is guaranteed to already exist.
     }
     // All Presenter methods must be called from non-UI threads to avoid deadlock.
     // See the UiMethods.with_main_window_result doc comment for more information.

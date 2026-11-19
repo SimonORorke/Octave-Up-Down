@@ -113,7 +113,7 @@ let titleAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: NSColor(calibratedRed: 0.12, green: 0.14, blue: 0.18, alpha: 1.0),
     .paragraphStyle: titleParagraphStyle
 ]
-let titleString = "PitchGrid-Continuum Bridge"
+let titleString = "Octave Up-Down"
 titleString.draw(in: NSRect(x: 20, y: 340, width: CGFloat(width) - 40, height: 32), withAttributes: titleAttrs)
 
 // Subtitle
