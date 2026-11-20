@@ -95,15 +95,27 @@ impl UiMethods {
             // Calculate dimensions for centering
             let dw_phys = (dialog.get_preferred_width() * scale_factor) as i32;
             let dh_phys = (dialog.get_preferred_height() * scale_factor) as i32;
-            let ms = main_window.window().size(); // Physical
-            let mp = main_window.window().position();
+            let ms = main_window.window().size(); // Physical, excludes the window frame (e.g. title bar)
+
+            // `Window::position()` returns the position of the window *including* its frame
+            // (e.g. the title bar on macOS), whereas `Window::size()` above *excludes* the frame.
+            // Mixing the two shifts the calculated centre vertically by (roughly) the title bar
+            // height, which is the cause of the dialog appearing too high. To stay consistent
+            // with `size()`, use the winit window's content-area position instead, falling back
+            // to `Window::position()` if the winit window isn't available or doesn't support it.
+            let fallback_mp = main_window.window().position();
+            let (mp_x, mp_y) = main_window.window()
+                .with_winit_window(|winit_window| winit_window.inner_position().ok())
+                .flatten()
+                .map(|p| (p.x, p.y))
+                .unwrap_or((fallback_mp.x, fallback_mp.y));
 
             // Parent dimensions are already physical
             let pw_phys = ms.width as i32;
             let ph_phys = ms.height as i32;
 
-            let x = mp.x + (pw_phys - dw_phys) / 2;
-            let y = mp.y + (ph_phys - dh_phys) / 2;
+            let x = mp_x + (pw_phys - dw_phys) / 2;
+            let y = mp_y + (ph_phys - dh_phys) / 2;
 
             dialog.window().set_position(WindowPosition::Physical(PhysicalPosition { x, y }));
         }
