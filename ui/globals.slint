@@ -51,7 +51,7 @@ export global Globals {
         }
     }
 
-    private property<UPrimaryColor> colour_scheme_primary: UAppTheme.daybreak-blue;
+    private property<UPrimaryColor> colour_scheme_primary: UAppTheme.dust-red;
     changed colour_scheme_primary => {
         UAppTheme.dark.primary = self.colour_scheme_primary;
         UAppTheme.dark.success = self.colour_scheme == ColourScheme.polar-green
