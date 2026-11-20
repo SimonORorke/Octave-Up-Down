@@ -107,9 +107,10 @@ static BOOL try_register_app_about_handler(NSString *appName) {
     return YES;
 }
 
-// Retained app name, re-used by the retry observer below.
+// Retained app name, re-used by the retry observers below.
 static NSString *gAboutAppName = nil;
 static id gAboutActivationObserver = nil;
+static id gAboutMenuTrackingObserver = nil;
 
 extern "C" void register_app_about_handler(TerminationCallback callback, const char *app_name) {
     if (![NSThread isMainThread]) {
@@ -134,14 +135,18 @@ extern "C" void register_app_about_handler(TerminationCallback callback, const c
         ? [[NSString stringWithUTF8String:app_name] retain]
         : nil;
 
-    if (try_register_app_about_handler(gAboutAppName)) {
-        return;
-    }
-    // The application menu bar doesn't exist yet: Slint (via the muda crate) only builds its
-    // default macOS menu bar lazily, the first time a window becomes active/key - which happens
-    // after NSApplicationDidFinishLaunchingNotification, so retrying here unconditionally (even
-    // when called from that notification's handler) would still be too early. Retry on every
-    // "window became key" notification (idempotent) until it succeeds, then stop observing.
+    try_register_app_about_handler(gAboutAppName);
+    // The application menu bar may not exist yet right now (e.g. Slint/muda only builds its
+    // default macOS menu bar lazily, the first time a window becomes active/key, which happens
+    // after NSApplicationDidFinishLaunchingNotification), and even once it exists, Slint rebuilds
+    // a fresh default app menu (with un-retitled "About <process name>" etc. items) on every
+    // subsequent window activation (see MenuBar::window_activation_changed in i-slint-backend-winit,
+    // which calls muda's Menu::init_for_nsapp() again on each activation). Because of this, a
+    // one-shot retry is not enough: the very first time the user opens the top menu - right after
+    // launch, before any such rebuild/retry has had a chance to run again - it can still show the
+    // untouched defaults, with only later opens showing the corrected titles. Keep re-applying the
+    // retitling (idempotent and cheap) on every window activation for the lifetime of the app,
+    // instead of stopping after the first success.
     if (gAboutActivationObserver == nil) {
         gAboutActivationObserver = [[[NSNotificationCenter defaultCenter]
             addObserverForName:NSWindowDidBecomeKeyNotification
@@ -149,12 +154,20 @@ extern "C" void register_app_about_handler(TerminationCallback callback, const c
                          queue:nil
                     usingBlock:^(NSNotification * _Nonnull note) {
                         (void)note;
-                        if (try_register_app_about_handler(gAboutAppName)) {
-                            [[NSNotificationCenter defaultCenter]
-                                removeObserver:gAboutActivationObserver];
-                            [gAboutActivationObserver release];
-                            gAboutActivationObserver = nil;
-                        }
+                        try_register_app_about_handler(gAboutAppName);
+                    }] retain];
+    }
+    // Also re-apply right before any native menu is about to be shown/tracked (e.g. the user
+    // clicking into the top menu bar), so that even the very first open - which may happen before
+    // any window-activation retry above has run again - already shows the corrected titles.
+    if (gAboutMenuTrackingObserver == nil) {
+        gAboutMenuTrackingObserver = [[[NSNotificationCenter defaultCenter]
+            addObserverForName:NSMenuDidBeginTrackingNotification
+                        object:nil
+                         queue:nil
+                    usingBlock:^(NSNotification * _Nonnull note) {
+                        (void)note;
+                        try_register_app_about_handler(gAboutAppName);
                     }] retain];
     }
 }
