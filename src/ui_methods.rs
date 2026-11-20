@@ -100,7 +100,7 @@ impl UiMethods {
             // `Window::position()` returns the position of the window *including* its frame
             // (e.g. the title bar on macOS), whereas `Window::size()` above *excludes* the frame.
             // Mixing the two shifts the calculated centre vertically by (roughly) the title bar
-            // height, which is the cause of the dialog appearing too high. To stay consistent
+            // height, which caused the dialog to appear too high. To stay consistent
             // with `size()`, use the winit window's content-area position instead, falling back
             // to `Window::position()` if the winit window isn't available or doesn't support it.
             let fallback_mp = main_window.window().position();
