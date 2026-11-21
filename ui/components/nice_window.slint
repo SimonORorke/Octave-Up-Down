@@ -19,6 +19,7 @@ export component NiceWindow inherits Window {
     in-out property<ColourScheme> nice_colour_scheme;
     changed nice_colour_scheme => {
         Globals.colour_scheme = self.nice_colour_scheme;
+        Globals.apply-colour-scheme();
     }
 
     protected function nice_init() {
@@ -29,5 +30,15 @@ export component NiceWindow inherits Window {
         UAppTheme.dark.font-size-big = 21px; // Default 18
         UAppTheme.dark.font-size-bigger = 23px; // Default 20
         UAppTheme.dark.radius-base = 20px;
+        // A `changed` callback never fires on a property's very first (default) evaluation when
+        // that default already equals the value being assigned to it. Since every window starts
+        // with `nice_colour_scheme` defaulting to the first `ColourScheme` enum value (dust-red),
+        // `changed nice_colour_scheme` above would silently never run for a window whose colour
+        // scheme ends up being dust-red (either because that's genuinely the current scheme, or
+        // because this runs before a dialog's colour scheme is forwarded from the main window).
+        // Applying it explicitly here guarantees `UAppTheme.dark.*` is always set correctly,
+        // and any later real change still re-applies it via the `changed` callback above.
+        Globals.colour_scheme = self.nice_colour_scheme;
+        Globals.apply-colour-scheme();
     }
 }

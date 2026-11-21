@@ -24,6 +24,20 @@ export global Globals {
 
     in-out property<ColourScheme> colour_scheme;
     changed colour_scheme => {
+        self.apply-colour-scheme();
+    }
+
+    private property<UPrimaryColor> colour_scheme_primary: UAppTheme.dust-red;
+
+    // Applies `colour_scheme` to `UAppTheme.dark.*`. Called explicitly (in addition to being
+    // wired to the `changed colour_scheme` callback above) because a `changed` callback never
+    // fires on a property's very first (default) evaluation when that default already equals
+    // the value being forwarded to it - which is exactly what happens when a freshly created
+    // dialog's own default colour scheme (dust-red) matches the main window's current one, and
+    // its colour scheme is then "set" to that same value. Without this explicit call, such a
+    // dialog would never apply its colour scheme to `UAppTheme.dark.*` and keep the library's
+    // compiled-in default theme colours instead.
+    public function apply-colour-scheme() {
         if self.colour_scheme == ColourScheme.dust-red {
             self.colour_scheme_primary = UAppTheme.dust-red;
         } else if self.colour_scheme == ColourScheme.volcano {
@@ -49,10 +63,6 @@ export global Globals {
         } else if self.colour_scheme == ColourScheme.french-magenta {
             self.colour_scheme_primary = UAppTheme.french-magenta;
         }
-    }
-
-    private property<UPrimaryColor> colour_scheme_primary: UAppTheme.dust-red;
-    changed colour_scheme_primary => {
         UAppTheme.dark.primary = self.colour_scheme_primary;
         UAppTheme.dark.success = self.colour_scheme == ColourScheme.polar-green
             ? UDarkColors.lime : UDarkColors.polar-green;
