@@ -14,3 +14,5 @@
 # resolve @sleek-ui imports. See docs/slint-lsp-sleek-ui-setup.md.
 /ui/@sleek-ui
 /ui/**/@sleek-ui
+
+.DS_Store

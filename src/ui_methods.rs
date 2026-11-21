@@ -100,15 +100,25 @@ impl UiMethods {
             // `Window::position()` returns the position of the window *including* its frame
             // (e.g. the title bar on macOS), whereas `Window::size()` above *excludes* the frame.
             // Mixing the two shifts the calculated centre vertically by (roughly) the title bar
-            // height, which caused the dialog to appear too high. To stay consistent
-            // with `size()`, use the winit window's content-area position instead, falling back
-            // to `Window::position()` if the winit window isn't available or doesn't support it.
-            let fallback_mp = main_window.window().position();
-            let (mp_x, mp_y) = main_window.window()
-                .with_winit_window(|winit_window| winit_window.inner_position().ok())
-                .flatten()
-                .map(|p| (p.x, p.y))
-                .unwrap_or((fallback_mp.x, fallback_mp.y));
+            // height, which caused the dialog to appear too high on macOS. To stay consistent
+            // with `size()` on macOS, use the winit window's content-area position instead,
+            // falling back to `Window::position()` if the winit window isn't available or doesn't
+            // support it. On Windows, `Window::position()` already yields the correct centring,
+            // so keep using it there.
+            #[cfg(target_os = "macos")]
+            let (mp_x, mp_y) = {
+                let fallback_mp = main_window.window().position();
+                main_window.window()
+                    .with_winit_window(|winit_window| winit_window.inner_position().ok())
+                    .flatten()
+                    .map(|p| (p.x, p.y))
+                    .unwrap_or((fallback_mp.x, fallback_mp.y))
+            };
+            #[cfg(not(target_os = "macos"))]
+            let (mp_x, mp_y) = {
+                let mp = main_window.window().position();
+                (mp.x, mp.y)
+            };
 
             // Parent dimensions are already physical
             let pw_phys = ms.width as i32;
