@@ -95,16 +95,19 @@ impl UiMethods {
             // Calculate dimensions for centering
             let dw_phys = (dialog.get_preferred_width() * scale_factor) as i32;
             let dh_phys = (dialog.get_preferred_height() * scale_factor) as i32;
-            let ms = main_window.window().size(); // Physical, excludes the window frame (e.g. title bar)
+            // On macOS, PhysicalSize excludes the window frame (e.g. title bar).
+            let ms = main_window.window().size();
 
+            // On macOS,
             // `Window::position()` returns the position of the window *including* its frame
             // (e.g. the title bar on macOS), whereas `Window::size()` above *excludes* the frame.
             // Mixing the two shifts the calculated centre vertically by (roughly) the title bar
             // height, which caused the dialog to appear too high on macOS. To stay consistent
             // with `size()` on macOS, use the winit window's content-area position instead,
             // falling back to `Window::position()` if the winit window isn't available or doesn't
-            // support it. On Windows, `Window::position()` already yields the correct centring,
-            // so keep using it there.
+            // support it.
+            // On Windows, the correct centring is provided by `Window::position()`,
+            // not by `winit_window.inner_position`.
             #[cfg(target_os = "macos")]
             let (mp_x, mp_y) = {
                 let fallback_mp = main_window.window().position();
