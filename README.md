@@ -1,6 +1,6 @@
 # Octave Up-Down for MIDI Pedals
 
-Octave Up-Down allows a pair of sustain pedals or momentary footswitches to be used instead of the octave shift buttons on a MIDI keyboard to transpose notes and note aftertouch /polyphonic aftertouch / pressure up or down by multiple octaves. A bonus feature allows the control change number of a MIDI controller to be changed: the controller may be one of the pedals used for octave transposition.
+Octave Up-Down allows a pair of sustain pedals or momentary footswitches to be used instead of the octave shift buttons on a MIDI keyboard to transpose notes and note aftertouch/polyphonic aftertouch/pressure up or down by multiple octaves. A bonus feature allows the control change number of a MIDI controller to be changed: the controller may be one of the pedals used for octave transposition.
 
 <img src="docs\images\Main Window.png" alt="Main Window" style="zoom: 80%;" />
 
@@ -20,7 +20,7 @@ Connect Octave-Up Down's **MIDI Output** to a sound engine, such as a synthesize
 
 ## How the Octave Shift Works
 
-Octave Up-Down emulates the usual behaviour or a MIDI keyboard's octave buttons. Pressing the down (left) pedal once shifts the note transposition down by one octave.  Pressing the up (right) pedal shifts the note transposition up by one octave.  Transposition can can be shifted a maximum of three octaves above or three octaves below the default.  The keys of the following MIDI message types are transposed:  Note On, Note Aftertouch (a.k.a. Polyphonic Aftertouch) and Note Off.  If transposition would result in a note outside the MIDI range 0 to 127, a transposed note is not output, resulting in silence.
+Octave Up-Down emulates the usual behaviour of a MIDI keyboard's octave buttons. Pressing the down (left) pedal once shifts the note transposition down by one octave.  Pressing the up (right) pedal shifts the note transposition up by one octave.  Transposition can can be shifted a maximum of three octaves above or three octaves below the default.  The keys of the following MIDI message types are transposed:  Note On, Note Aftertouch (a.k.a. Polyphonic Aftertouch) and Note Off.  If transposition would result in a note outside the MIDI range 0 to 127, a transposed note is not output, resulting in silence.
 
 ## Changing a Control Change Number
 
